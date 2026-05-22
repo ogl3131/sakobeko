@@ -263,12 +263,12 @@ class BootScene extends Phaser.Scene {
             progress.destroy();
         });
 
-        // Resimlerin Yüklenmesi
-        this.load.image('baris', 'assets/baris.png');
-        this.load.image('sakobeko', 'assets/sakobeko.png');
+        // Resimlerin Yüklenmesi (Kök dizin uyumlu)
+        this.load.image('baris', 'baris.png');
+        this.load.image('sakobeko', 'sakobeko.png');
 
-        // Seslerin Yüklenmesi
-        this.load.audio('saksocuBeko', 'assets/saksocubeko.ogg');
+        // Seslerin Yüklenmesi (Kök dizin uyumlu)
+        this.load.audio('saksocuBeko', 'saksocubeko.ogg');
     }
 
     create() {
