@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SakoBeko vs Barış: Toxic Slingshot</title>
+    <!-- Global Hata Yakalayıcı (Hata anında ekrana bilgi basar) -->
+    <script>
+        window.addEventListener('error', function(e) {
+            // Eklentiler (ad blocker, Brave Shield, şifre yöneticileri vb.) veya harici CORS kaynaklı sahte hataları yoksay
+            if (e.message === "Script error." || !e.filename || e.filename.includes("chrome-extension")) {
+                return;
+            }
+
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.height = '100%';
+            div.style.background = 'rgba(15, 10, 20, 0.95)';
+            div.style.color = '#ff3131';
+            div.style.padding = '30px';
+            div.style.zIndex = '9999999';
+            div.style.fontFamily = 'monospace';
+            div.style.overflow = 'auto';
+            div.style.border = '4px solid #ff3131';
+            div.style.boxShadow = '0 0 30px rgba(255, 49, 49, 0.5)';
+            div.innerHTML = '<h2 style="color:#ff3131;text-shadow:0 0 10px rgba(255,49,49,0.5);font-family:\'Permanent Marker\', cursive;margin-bottom:15px;">⚠️ SİLENT CRASH / OYUN HATASI YAKALANDI</h2>' +
+                            '<p style="font-size:16px;margin-bottom:10px;"><strong>Hata Mesajı:</strong> <span style="color:#fff;">' + e.message + '</span></p>' +
+                            '<p style="font-size:14px;margin-bottom:10px;"><strong>Dosya:</strong> ' + e.filename + ' (Satır: ' + e.lineno + ')</p>' +
+                            '<pre style="background:#050308;padding:15px;border-radius:8px;border:1px solid rgba(255,49,49,0.3);color:#ff8888;white-space:pre-wrap;font-size:13px;">' + (e.error ? e.error.stack : 'Stack Trace mevcut değil.') + '</pre>' +
+                            '<div style="margin-top:20px;"><button onclick="location.reload()" style="background:#ff3131;color:#fff;border:none;padding:10px 20px;font-weight:bold;cursor:pointer;border-radius:5px;">Sayfayı Yenile</button></div>';
+            document.body.appendChild(div);
+        });
+    </script>
+    <!-- Göz alıcı fontlar -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <!-- Phaser 3 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.86.0/dist/phaser.min.js"></script>
+    <!-- Stil Dosyası -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Rage Arka Plan Filtresi (Bütün ekranda distortion efekti için) -->
+    <div id="rage-overlay" class="rage-overlay"></div>
+
+    <div id="ui-container">
+        <!-- Giriş ve Başlangıç Ekranı -->
+        <div id="start-screen" class="screen active">
+            <div class="glass-panel">
+                <h1 class="game-title">SAKOBEKO <span class="vs">VS</span> BARIŞ</h1>
+                <p class="game-subtitle">Toxic Slingshot Challenge</p>
+                
+                <div class="character-preview-container">
+                    <div class="char-preview card-sakobeko">
+                        <img src="assets/sakobeko.png" alt="SakoBeko" class="preview-img">
+                        <span class="badge badge-hero">SakoBeko</span>
+                        <p class="char-desc">Sürekli tilt edilen, sapanla uçan öfkeli kahraman!</p>
+                    </div>
+                    <div class="vs-divider">VS</div>
+                    <div class="char-preview card-baris">
+                        <img src="assets/baris.png" alt="Barış" class="preview-img">
+                        <span class="badge badge-enemy">Barış</span>
+                        <p class="char-desc">Engellerin arkasında sırıtan, toxic kahkahalar atan baş düşman!</p>
+                    </div>
+                </div>
+
+                <div class="menu-actions">
+                    <button id="btn-start" class="btn btn-primary btn-pulse">
+                        <span class="btn-text">SESLERİ AÇ & SAVAŞI BAŞLAT!</span>
+                        <span class="btn-subtext">Tarayıcı ses izni için tıklamalısın</span>
+                    </button>
+                    <button id="btn-test-speech" class="btn btn-secondary">
+                        📢 Barış'ın Sesini Test Et
+                    </button>
+                </div>
+
+                <div class="rules-box">
+                    <h3>🎮 Nasıl Oynanır?</h3>
+                    <ul>
+                        <li>SakoBeko'yu sapanla geriye doğru çek ve nişan alıp fırlat!</li>
+                        <li>Barış'ı koruyan blokları (cam, tahta, taş) parçala ve Barış'a doğrudan çarp!</li>
+                        <li>3 hakkın var. Barış her 10 saniyede bir seninle dalga geçip <strong>Rage</strong> barını dolduracak!</li>
+                        <li>Rage barın dolduğunda <strong>RAGE ULTI</strong> modu açılır! Bir sonraki fırlatman devasa patlamaya yol açar!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oyun İçi UI Arayüzü (Phaser'ın üstünde duracak) -->
+        <div id="game-ui" class="screen">
+            <div class="top-bar">
+                <div class="stat-box">
+                    <span class="stat-label">SKOR</span>
+                    <span id="score-val" class="stat-value">000000</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">HAKLAR</span>
+                    <div id="hearts-container" class="hearts-container">
+                        <span class="heart active">🥚</span>
+                        <span class="heart active">🥚</span>
+                        <span class="heart active">🥚</span>
+                    </div>
+                </div>
+                <div class="stat-box rage-box">
+                    <span class="stat-label">RAGE METER</span>
+                    <div class="rage-bar-bg">
+                        <div id="rage-bar-fill" class="rage-bar-fill" style="width: 0%"></div>
+                        <span id="rage-percent" class="rage-percent-text">0%</span>
+                    </div>
+                </div>
+                <button id="btn-restart" class="btn-icon">🔄 Yeniden Başlat</button>
+            </div>
+
+            <!-- Toxic Altyazı / Dialog Balonu -->
+            <div id="speech-bubble" class="speech-bubble hidden">
+                <div class="speech-tail"></div>
+                <p id="speech-text">Hahaha! Saksocu Beko, vuramadın ki!</p>
+            </div>
+        </div>
+
+        <!-- Game Over (Kaybetme) Ekranı -->
+        <div id="gameover-screen" class="screen">
+            <div class="glass-panel lost-panel">
+                <h2 class="result-title text-red animate-bounce">BARIŞ KAZANDI! 😂</h2>
+                <img src="assets/baris.png" alt="Barış Gülüyor" class="result-avatar lost-avatar">
+                <p class="result-msg">"Hahahaha! Olum sapanı bile çekemiyorsun, Saksocu Beko seni!"</p>
+                <div class="score-summary">
+                    <p>Toplam Skor: <span id="final-score-lost" class="text-neon">0</span></p>
+                </div>
+                <button id="btn-retry" class="btn btn-primary">Tekrar Dene (İntikam Vakti!)</button>
+            </div>
+        </div>
+
+        <!-- Win (Kazanma) Ekranı -->
+        <div id="win-screen" class="screen">
+            <div class="glass-panel win-panel">
+                <h2 class="result-title text-green animate-pulse">SAKOBEKO KAZANDI! 🔥</h2>
+                <div class="win-avatars">
+                    <img src="assets/sakobeko.png" alt="SakoBeko Kazandı" class="result-avatar win-avatar">
+                    <span class="crown">👑</span>
+                </div>
+                <p class="result-msg">Barış'ın o sinir bozucu gülüşünü yüzüne çarptın ve onu darmadağın ettin!</p>
+                <div class="score-summary">
+                    <p>Toplam Skor: <span id="final-score-win" class="text-neon">0</span></p>
+                </div>
+                <button id="btn-next-level" class="btn btn-primary">Sonraki Level'a Geç!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phaser Oyununun Çizileceği Konteyner -->
+    <div id="game-container"></div>
+
+    <!-- Oyun Kodları -->
+    <script src="game.js"></script>
+
+</body>
+</html>
