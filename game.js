@@ -695,9 +695,9 @@ class PlayScene extends Phaser.Scene {
         this.input.on('pointerdown', (pointer) => {
             if (this.isBirdFlying) return;
 
-            // Kuşa tıklanıp tıklanmadığını kontrol et
+            // Kuşa tıklanıp tıklanmadığını kontrol et (Genişletilmiş dokunma hassasiyeti: 85px)
             const dist = Phaser.Math.Distance.Between(pointer.x, pointer.y, this.bird.x, this.bird.y);
-            if (dist < 40) {
+            if (dist < 85) {
                 this.isDragging = true;
             }
         });
@@ -1228,6 +1228,9 @@ const config = {
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     backgroundColor: '#0d0f12',
+    input: {
+        activePointers: 3
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

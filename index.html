@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SakoBeko vs Barış: Toxic Slingshot</title>
     <!-- Global Hata Yakalayıcı (Hata anında ekrana bilgi basar) -->
     <script>
@@ -33,6 +33,12 @@
                             '<div style="margin-top:20px;"><button onclick="location.reload()" style="background:#ff3131;color:#fff;border:none;padding:10px 20px;font-weight:bold;cursor:pointer;border-radius:5px;">Sayfayı Yenile</button></div>';
             document.body.appendChild(div);
         });
+
+        // Mobil Safari'de kaydırma, elastik geri sekme ve yakınlaştırmayı tamamen engeller
+        document.addEventListener('touchmove', function(e) {
+            // Oyun içi kaydırmanın önüne geçmek için tüm sayfa hareketlerini iptal et
+            e.preventDefault();
+        }, { passive: false });
     </script>
     <!-- Göz alıcı fontlar -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -150,6 +156,17 @@
                 </div>
                 <button id="btn-next-level" class="btn btn-primary">Sonraki Level'a Geç!</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Portrait (Dikey Ekran) Uyarı Ekranı -->
+    <div id="landscape-warning">
+        <div class="glass-panel" style="max-width: 400px; border-color: var(--neon-yellow); display: flex; flex-direction: column; align-items: center;">
+            <div class="phone-rotate-icon">🔄</div>
+            <h2 style="font-family: var(--font-game); color: var(--neon-yellow); margin-bottom: 15px; font-size: 1.8rem;">CİHAZI YAN ÇEVİRİN</h2>
+            <p style="color: var(--text-light); opacity: 0.9; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0;">
+                SakoBeko vs Barış savaşını tam ekran ve kesintisiz oynamak için lütfen telefonunuzu yan (yatay) döndürün!
+            </p>
         </div>
     </div>
 
